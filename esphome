@@ -1,0 +1,130 @@
+esphome:
+  name: iaq_uno
+  friendly_name: Indoor Air Quality Uno
+  project:
+    name: "M&J Automations.IAQ UNO"
+    version: "23.8.10.5"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "1234565"
+
+ota:
+  password: "1234565"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "IAQ_Setup_1"
+    password: "1234565"
+  domain: <Domain>.com
+
+captive_portal:
+
+external_components:
+  # use rtttl and dfplayer from ESPHome's dev branch in GitHub
+  - source:
+      type: git
+      url: https://github.com/mharris1984/IAQ_UNO
+      ref: dev
+    components: [ rtttl, dfplayer ]
+
+i2c:
+  - id: bus_a
+    sda: 21
+    scl: 22
+    scan: true
+  - id: bus_b
+    sda: 15
+    scl: 2
+    scan: true
+
+bme680_bsec:
+  - id: bme680
+    i2c_id: "bus_b"
+    address: 0x77
+    state_save_interval: 6h
+    sample_rate: lp
+    iaq_mode: static
+    
+sensor:
+  - platform: bh1750
+    name: "LUX"
+    id: luxlight
+    address: 0x23
+    i2c_id: bus_a
+    update_interval: 2s
+
+  - platform: bme680_bsec
+    bme680_bsec_id: bme680
+    temperature:
+      name: "Temperature"
+      accuracy_decimals: 1
+      unit_of_measurement: "°F"
+      id: temperature
+    pressure:
+      name: "Barometric Pressure"
+      accuracy_decimals: 5
+      id: pressure
+    humidity:
+      name: "Humidity"
+      id: humidity
+      accuracy_decimals: 1
+    gas_resistance:
+      name: "Gas Resistance"
+      id: gas
+      accuracy_decimals: 5
+    co2_equivalent:
+      name: "CO2 Equivalent"
+    iaq:
+      name: "IAQ"
+      id: iaq
+    breath_voc_equivalent:
+      name: "Intake Breath VOC Equivalent"
+      filters:
+        - median
+      
+text_sensor:
+  - platform: bme680_bsec
+    bme680_bsec_id: bme680
+    iaq_accuracy:
+      name: "IAQ Accuracy"
+
+  - platform: template
+    name: "IAQ Classification"
+    icon: "mdi:checkbox-marked-circle-outline"
+    lambda: |-
+      if ( int(id(iaq).state) <= 50) {
+        return {"Excellent"};
+      }
+      else if (int(id(iaq).state) >= 51 && int(id(iaq).state) <= 100) {
+        return {"Good"};
+      }
+      else if (int(id(iaq).state) >= 101 && int(id(iaq).state) <= 150) {
+        return {"Lightly polluted"};
+      }
+      else if (int(id(iaq).state) >= 151 && int(id(iaq).state) <= 200) {
+        return {"Moderately polluted"};
+      }
+      else if (int(id(iaq).state) >= 201 && int(id(iaq).state) <= 250) {
+        return {"Heavily polluted"};
+      }
+      else if (int(id(iaq).state) >= 251 && int(id(iaq).state) <= 350) {
+        return {"Severely polluted"};
+      }
+      else if (int(id(iaq).state) >= 351) {
+        return {"Extremely polluted"};
+      }
+      else {
+        return {"error"};
+      }
