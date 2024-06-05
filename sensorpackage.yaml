@@ -1,8 +1,8 @@
 
 substitutions:
-  name: iaq_uno
+  name: qc_iaq_uno
   friend: QuantumSync Solutions IAQ-UNO
-  version: "24.01.24"
+  version: "24.01.24.101"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -32,39 +32,43 @@ esp32:
   board: esp32dev
   framework:
     type: arduino
+    
 
 logger:
 
 api:
   encryption:
-    key: "TgQxi0unvoCFsohL9Ou3JkU5VI/OLQ9yXn+sXqXPz4c="
+    key: !secret IAQ_API_ENCRYPTKEY
 
 ota:
-  password: "d645ddda2ce7fe34835b17e62a7339c2"
+  password: !secret IAQ_OTA_PWD
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   ap:
-    ssid: "QSS-IAQ UNO Setup"
-    password: "qssiaqsetup"
-  domain: .mjhhome.com
+    ssid: !secret IAQ_Wifi_Portal_SSID
+    password: !secret IAQ_Wifi_Portal_PWD
+  domain: !secret IAQ_Wifi_Domain
 
 captive_portal:
 
 web_server:
   port: 80
 
+#ONBAORD LOCATION LED PIN SETUP
 output:
   - platform: ledc
     pin: 2
     id: output_ledpin2
 
+#ONBAORD LOCATION LED SETUP
 light:
   - platform: monochromatic
     name: "LED Locate"
     output: output_ledpin2
 
+#I2C PIN SETUP
 i2c:
   - id: i2c0
     sda: 21
@@ -72,6 +76,7 @@ i2c:
     scan: true
     frequency: 800kHz
 
+#I2C MULTIPLEXER CHANNEL SETUP
 tca9548a:
   - id: multiplex0
     i2c_id: i2c0
@@ -83,6 +88,7 @@ tca9548a:
       - bus_id: multiplex0channel2
         channel: 2
 
+#NEEDED FOR BME680 SENSOR USAGE WITH ESPHOME
 bme680_bsec:
   - id: bme680
     i2c_id: "multiplex0channel0"
@@ -92,13 +98,15 @@ bme680_bsec:
     iaq_mode: static
     
 sensor:
-  - platform: bh1750 #BH1750 ILLUMINATION SENSOR SETUP
+#BH1750 ILLUMINATION SENSOR SETUP
+  - platform: bh1750 
     name: "LUX"
     id: luxlight
     address: 0x23
     i2c_id: multiplex0channel1
     update_interval: 2s
 
+#BME680 SENSOR SETUP
   - platform: bme680_bsec #BME680 TEMP/BARO/HUMIDITY/C02/GAS/IAQ/BVOC SENSOR SETUP
     bme680_bsec_id: bme680
     temperature:
@@ -130,7 +138,8 @@ sensor:
       filters:
         - median
 
-  - platform: sgp30 #SP30 eC02/TVOC SENSOR SETUP
+#SP30 eC02/TVOC SENSOR SETUP
+  - platform: sgp30 
     i2c_id: multiplex0channel2
     eco2:
       name: "eCO2"
@@ -144,10 +153,12 @@ sensor:
       temperature_source: temperaturebme
       humidity_source: humiditybme
 
-  - platform: wifi_signal #WIFI SIGNAL STRENGTH SETUP 
+#WIFI SIGNAL STRENGTH SETUP 
+  - platform: wifi_signal 
     name: "IAQ UNO - WiFi Signal"
     update_interval: 120s
 
+#IAQ-UNO CPU SPEED SETUP 
   - platform: template
     name: "ESP Cpu Speed"
     accuracy_decimals: 0
@@ -156,6 +167,7 @@ sensor:
       return (id(cpu_speed));
     entity_category: "diagnostic"
 
+#IAQ-UNO ONBOARD CPU TEMP SETUP
   - platform: template
     id: sys_esp_temperature
     name: ESP Temperature
@@ -164,11 +176,13 @@ sensor:
     device_class: TEMPERATURE
     update_interval: 60s
 
+#IAQ-UNO UPTIME SINCE LAST REBOOT SETUP
   - platform: uptime
     name: Uptime
     id: sys_uptime
     update_interval: 60s
 
+#IAQ-UNO MEMORY STATUS SETUP
   - platform: template
     id: esp_memory
     icon: mdi:memory
@@ -178,18 +192,27 @@ sensor:
     state_class: measurement
     entity_category: "diagnostic"
 
+#PIR SENSOR SETUP
 binary_sensor:
   - platform: gpio
     pin: 4
     name: "PIR Sensor"
     device_class: motion
 
-text_sensor: #BME680 LAMBDA READOUT SETUP
+text_sensor: 
+#BME680 LAMBDA READOUT SETUP
   - platform: bme680_bsec 
     bme680_bsec_id: bme680
     iaq_accuracy:
       name: "IAQ Accuracy"
-      
+
+#IAQ FIRMWARE VERSION READOUT SETUP
+  - platform: template
+    name: QC_IAQ_Version
+    lambda: |- 
+      return to_string("${version}");
+
+#IAQ CLASSIFICATION READOUT SETUP
   - platform: template
     name: "IAQ Classification"
     icon: "mdi:checkbox-marked-circle-outline"
@@ -197,45 +220,52 @@ text_sensor: #BME680 LAMBDA READOUT SETUP
       if ( int(id(iaq).state) <= 50) {
         return {"Excellent"};
       }
-      else if (int(id(iaq).state) >= 51 && int(id(iaq).state) <= 100) {
+      else if (int(id(iaq).state) >= 50 && int(id(iaq).state) <= 100) {
         return {"Good"};
       }
-      else if (int(id(iaq).state) >= 101 && int(id(iaq).state) <= 150) {
+      else if (int(id(iaq).state) >= 100 && int(id(iaq).state) <= 150) {
         return {"Lightly polluted"};
       }
-      else if (int(id(iaq).state) >= 151 && int(id(iaq).state) <= 200) {
+      else if (int(id(iaq).state) >= 150 && int(id(iaq).state) <= 200) {
         return {"Moderately polluted"};
       }
-      else if (int(id(iaq).state) >= 201 && int(id(iaq).state) <= 250) {
+      else if (int(id(iaq).state) >= 200 && int(id(iaq).state) <= 250) {
         return {"Heavily polluted"};
       }
-      else if (int(id(iaq).state) >= 251 && int(id(iaq).state) <= 350) {
+      else if (int(id(iaq).state) >= 250 && int(id(iaq).state) <= 350) {
         return {"Severely polluted"};
       }
-      else if (int(id(iaq).state) >= 351) {
+      else if (int(id(iaq).state) >= 350) {
         return {"Extremely polluted"};
       }
       else {
         return {"error"};
       }
 
+#LUX BRIGHTNESS READOUT SETUP
   - platform: template
     name: "LUX Brightness"
     icon: "mdi:checkbox-marked-circle-outline"
     lambda: |-
-      if ( int(id(luxlight).state) <= 50) {
-        return {"Dark"};
+      if (int(id(luxlight).state) <= 2) {
+        return {"DARK"};
       }
-      else if (int(id(luxlight).state) >= 51 && int(id(iaq).state) <= 200) {
-        return {"Dim"};
+      else if (int(id(luxlight).state) >= 2 && int(id(luxlight).state) <= 10) {
+        return {"Inside Lights ON DIM"};
       }
-      else if (int(id(luxlight).state) >= 201 && int(id(iaq).state) <= 550) {
+      else if (int(id(luxlight).state) >= 10 && int(id(luxlight).state) <= 20) {
         return {"Inside Lights ON"};
       }
-      else if (int(id(luxlight).state) >= 551 && int(id(iaq).state) <= 1000) {
+      else if (int(id(luxlight).state) >= 20 && int(id(luxlight).state) <= 200) {
+        return {"Windows Open - Natural Light Coming In"};
+      }
+      else if (int(id(luxlight).state) >= 200 && int(id(luxlight).state) <= 550) {
+        return {"Full Sun Coming in the house"};
+      }
+      else if (int(id(luxlight).state) >= 550 && int(id(luxlight).state) <= 1000) {
         return {"Sunny Day"};
       }
-      else if (int(id(luxlight).state) >= 1001 && int(id(iaq).state) <= 10000) {
+      else if (int(id(luxlight).state) >= 1000 && int(id(luxlight).state) <= 10000) {
         return {"Direct Sun"};
       }
       else if (int(id(luxlight).state) >= 10000) {
@@ -245,6 +275,7 @@ text_sensor: #BME680 LAMBDA READOUT SETUP
         return {"error"};
       }
 
+#RESTART BUTTON TO POWER CYCLE THE IAQ-UNO
 button:
   - platform: restart
     icon: mdi:power-cycle
