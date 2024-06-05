@@ -1,7 +1,7 @@
 substitutions:
   name: qc_iaq_uno
   friend: QuantumSync Solutions IAQ-UNO
-  version: "24.01.24.300"
+  version: "24.01.24.401"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -155,22 +155,15 @@ sensor:
 #WIFI SIGNAL STRENGTH SETUP 
   - platform: wifi_signal 
     name: "IAQ UNO - WiFi Signal"
+    icon: "mdi:wifi"
     update_interval: 120s
-    entity_category: "diagnostic"
-
-#IAQ FIRMWARE VERSION READOUT SETUP
-- platform: template
-    name: QC_IAQ_Version
-    update_interval: 900s
-    lambda: |- 
-      return to_string("${version}");
     entity_category: "diagnostic"
 
 #IAQ-UNO CPU SPEED SETUP 
   - platform: template
     name: "ESP Cpu Speed"
     accuracy_decimals: 0
-    #icon: "mdi:speedometer"
+    icon: "mdi:speedometer"
     unit_of_measurement: Mhz
     lambda: |-
       return (id(cpu_speed));
@@ -183,25 +176,39 @@ sensor:
     lambda: return temperatureRead();
     unit_of_measurement: °C
     device_class: TEMPERATURE
-    #icon: "mdi:thermometer"
+    icon: "mdi:thermometer"
     update_interval: 60s
 
 #IAQ-UNO UPTIME SINCE LAST REBOOT SETUP
   - platform: uptime
     name: Uptime
     id: sys_uptime
-    #icon: "mdi:thumb-up-outline"
+    icon: "mdi:thumb-up-outline"
     update_interval: 60s
 
 #IAQ-UNO MEMORY STATUS SETUP
   - platform: template
     id: esp_memory
-    #icon: mdi:memory
+    icon: mdi:memory
     name: IAQ Sensor Free Memory
     lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024;
     unit_of_measurement: "kB"
     state_class: measurement
     entity_category: "diagnostic"
+
+#PIR SENSOR SETUP
+binary_sensor:
+  - platform: gpio
+    pin: 4
+    name: "PIR Sensor"
+    device_class: motion
+
+text_sensor: 
+#BME680 LAMBDA READOUT SETUP
+  - platform: bme680_bsec 
+    bme680_bsec_id: bme680
+    iaq_accuracy:
+      name: "IAQ Accuracy"
 
 #WIFI INFORMATION READOUT SETUP
   - platform: wifi_info
@@ -224,19 +231,12 @@ sensor:
       name: IAQ-UNO DNS Address
       icon: "mdi:dns"
 
-#PIR SENSOR SETUP
-binary_sensor:
-  - platform: gpio
-    pin: 4
-    name: "PIR Sensor"
-    device_class: motion
+#IAQ FIRMWARE VERSION READOUT SETUP
+  - platform: template
+    name: QC_IAQ_Version
+    lambda: |- 
+      return to_string("${version}");
 
-text_sensor: 
-#BME680 LAMBDA READOUT SETUP
-  - platform: bme680_bsec 
-    bme680_bsec_id: bme680
-    iaq_accuracy:
-      name: "IAQ Accuracy"
 
 #IAQ CLASSIFICATION READOUT SETUP
   - platform: template
