@@ -1,7 +1,7 @@
 substitutions:
   name: qc_iaq_uno
   friend: QuantumSync Solutions IAQ-UNO
-  version: "24.01.24.501"
+  version: "24.01.24.502"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -237,7 +237,7 @@ text_sensor:
     name: IAQ-UNO Version
     lambda: |- 
       return to_string("${version}");
-    entity_category: "configuration"
+    entity_category: "config"
 
 
 #IAQ CLASSIFICATION READOUT SETUP
