@@ -35,12 +35,14 @@ esp32:
 
 logger:
 
-api:
-  encryption:
-    key: !secret IAQ_API_ENCRYPTKEY
+#API Encryption should be generated on device already. 
+#api:
+#  encryption:
+#    key: !secret IAQ_API_ENCRYPTKEY
 
-ota:
-  password: !secret IAQ_OTA_PWD
+#OTA PWD should be generated on device already. 
+#ota:
+#  password: !secret IAQ_OTA_PWD
 
 wifi:
   ssid: !secret wifi_ssid
