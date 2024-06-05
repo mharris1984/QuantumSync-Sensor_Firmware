@@ -158,6 +158,7 @@ sensor:
     name: "IAQ UNO - WiFi Signal"
     icon: "mdi:wifi"
     update_interval: 120s
+    entity_category: "diagnostic"
 
 #IAQ FIRMWARE VERSION READOUT SETUP
 - platform: template
@@ -166,6 +167,7 @@ sensor:
     update_interval: 900s
     lambda: |- 
       return to_string("${version}");
+    entity_category: "diagnostic"
 
 #IAQ-UNO CPU SPEED SETUP 
   - platform: template
@@ -238,9 +240,6 @@ text_sensor:
     bme680_bsec_id: bme680
     iaq_accuracy:
       name: "IAQ Accuracy"
-
-
-
 
 #IAQ CLASSIFICATION READOUT SETUP
   - platform: template
