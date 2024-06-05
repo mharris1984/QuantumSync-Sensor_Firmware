@@ -45,8 +45,8 @@ web_server:
   port: 80
 
 i2c:
-  sda: D1
-  scl: D2
+  sda: D2
+  scl: D1
 
 display:
   - platform: ssd1306_i2c
