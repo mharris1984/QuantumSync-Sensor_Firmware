@@ -36,6 +36,15 @@ web_server:
   port: 80
 
 font:
+  - file: "fonts/Comic Sans MS.ttf"
+    id: my_font
+    size: 20
+    bpp: 2
+
+  - file: "fonts/tom-thumb.bdf"
+    id: tomthumb
+
+    # gfonts://family[@weight]
   - file: "gfonts://Roboto"
     id: roboto_20
     size: 20
@@ -47,14 +56,53 @@ font:
     id: roboto_16
     size: 16
 
+  - file: "gfonts://Material+Symbols+Outlined"
+    id: icons_50
+    size: 50
+    glyphs: ["\U0000e425"] # mdi-timer
+
+  - file: "fonts/RobotoCondensed-Regular.ttf"
+    id: roboto_special_28
+    size: 28
+    bpp: 4
+    glyphs: [
+      a,A,á,Á,e,E,é,É,
+      (,),+,-,_,.,°,•,µ,
+      "\u0020", #space
+      "\u0021", #!
+      "\u0022", #"
+      "\u0027", #'
+      ]
+
+  - file: "fonts/RobotoCondensed-Regular.ttf"
+    id: my_font_with_icons
+    size: 20
+    bpp: 4
+    extras:
+      - file: "fonts/materialdesignicons-webfont.ttf"
+        glyphs: [
+          "\U000F02D1", # mdi-heart
+          "\U000F05D4", # mdi-airplane-landing
+          ]
+
+  - file: "https://github.com/IdreesInc/Monocraft/releases/download/v3.0/Monocraft.ttf"
+    id: web_font
+    size: 20
+  - file:
+      url: "https://github.com/IdreesInc/Monocraft/releases/download/v3.0/Monocraft.ttf"
+      type: web
+    id: web_font2
+    size: 24
+
 i2c:
   sda: D2
   scl: D1
 
 display:
   - platform: SH1106_i2c
-    model: "SSD1306 128x64"
+    model: "SH1106 128x64"
     address: 0x3C
+    update_interval: 15s
     lambda: |-
-      it.print(0, 0, id(roboto_20), "Hello World!");
+      it.print(0, 0, id(roboto_16), "Hello World!");
     
