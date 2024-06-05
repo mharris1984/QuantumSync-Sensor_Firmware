@@ -47,7 +47,7 @@ font:
     id: roboto_16
     size: 16
 
-  - file: 'ComicSansMS3.ttf'
+  - file: 'ariblk.ttf'
     id: font1
     size: 14
 
