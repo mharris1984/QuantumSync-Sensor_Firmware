@@ -1,7 +1,7 @@
 substitutions:
   name: esp8266_masterbath-iaq
   friend: 8266 QuantumSync Solutions IAQ-UNO
-  version: "24.05.6.500.8266"
+  version: "24.05.6.800.8266"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -73,9 +73,5 @@ display:
     lambda: |-
       it.printf(64, 0, id(roboto_16), "Current Time:");
       it.strftime(0, 60, id(font1), "%H:%M", id(esptime).now());
-      if (id(HAlocal_IP).has_state()) {
-        it.printf(127, 23, id(font1), id(HAlocal_IP).state);
-      }
-
 
     
