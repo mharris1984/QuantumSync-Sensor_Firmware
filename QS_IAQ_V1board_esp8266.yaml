@@ -47,6 +47,16 @@ font:
     id: roboto_16
     size: 16
 
+time:
+  - platform: homeassistant
+    id: esptime
+
+sensor:
+  - platform: homeassistant
+    id: HAlocal_IP
+    entity_id: sensor.local_ip
+    internal: true
+
 i2c:
   sda: D2
   scl: D1
@@ -57,5 +67,11 @@ display:
     address: 0x3C
     update_interval: 15s
     lambda: |-
-      it.print(0, 0, id(roboto_16), "Hello World!");
+      it.printf(64, 0, id(roboto_16), TextAlign::TOP_CENTER, "Current Time:");
+      it.strftime(0, 60, id(font2), TextAlign::BASELINE_LEFT, "%H:%M", id(esptime).now());
+      if (id(HAlocal_IP).has_state()) {
+        it.printf(127, 23, id(font3), TextAlign::TOP_RIGHT, id(HAlocal_IP).state);
+      }
+
+
     
