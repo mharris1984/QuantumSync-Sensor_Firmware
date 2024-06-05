@@ -1,7 +1,7 @@
 substitutions:
   name: qc_iaq_uno
   friend: QuantumSync Solutions IAQ-UNO
-  version: "24.01.24.401"
+  version: "24.01.24.501"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -154,14 +154,14 @@ sensor:
 
 #WIFI SIGNAL STRENGTH SETUP 
   - platform: wifi_signal 
-    name: "IAQ UNO - WiFi Signal"
+    name: IAQ-UNO - WiFi Signal
     icon: "mdi:wifi"
     update_interval: 120s
     entity_category: "diagnostic"
 
 #IAQ-UNO CPU SPEED SETUP 
   - platform: template
-    name: "ESP Cpu Speed"
+    name: IAQ-UNO CPU Speed
     accuracy_decimals: 0
     icon: "mdi:speedometer"
     unit_of_measurement: Mhz
@@ -172,16 +172,17 @@ sensor:
 #IAQ-UNO ONBOARD CPU TEMP SETUP
   - platform: template
     id: sys_esp_temperature
-    name: ESP Temperature
+    name: IAQ-UNO CPU Temp
     lambda: return temperatureRead();
     unit_of_measurement: °C
     device_class: TEMPERATURE
     icon: "mdi:thermometer"
     update_interval: 60s
+    entity_category: "diagnostic"
 
 #IAQ-UNO UPTIME SINCE LAST REBOOT SETUP
   - platform: uptime
-    name: Uptime
+    name: IAQ-UNO Uptime
     id: sys_uptime
     icon: "mdi:thumb-up-outline"
     update_interval: 60s
@@ -190,7 +191,7 @@ sensor:
   - platform: template
     id: esp_memory
     icon: mdi:memory
-    name: IAQ Sensor Free Memory
+    name: IAQ-UNO Free Memory
     lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024;
     unit_of_measurement: "kB"
     state_class: measurement
@@ -233,9 +234,10 @@ text_sensor:
 
 #IAQ FIRMWARE VERSION READOUT SETUP
   - platform: template
-    name: QC_IAQ_Version
+    name: IAQ-UNO Version
     lambda: |- 
       return to_string("${version}");
+    entity_category: "configuration"
 
 
 #IAQ CLASSIFICATION READOUT SETUP
@@ -305,4 +307,4 @@ text_sensor:
 button:
   - platform: restart
     icon: mdi:power-cycle
-    name: "IAQ Sensor Powercycle"
+    name: "IAQ-UNO Powercycle"
