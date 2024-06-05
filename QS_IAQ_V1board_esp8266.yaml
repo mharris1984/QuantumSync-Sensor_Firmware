@@ -8,15 +8,6 @@ esphome:
   name: "${name}"
   friendly_name: MasterBath IAQ
   on_boot:
-  - priority: 900.0
-    then:
-      - lambda: |-
-          id(cpu_speed) = ESP.getCpuFreqMHz();
-
-esp8266:
-  board: esp01_1m
-    
-  on_boot:
     - priority: 900.0
       then:
         - lambda: |-
@@ -24,6 +15,9 @@ esp8266:
   project:
     name: "IAQuno.QuantumSyncSolutions"
     version: "${version}"
+
+esp8266:
+  board: esp01_1m
 
 globals:
   - id: cpu_speed
