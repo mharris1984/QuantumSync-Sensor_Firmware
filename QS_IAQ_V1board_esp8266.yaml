@@ -12,7 +12,9 @@ esphome:
     version: "${version}"
 
 esp8266:
-  board: esp01_1m
+  board: nodemcuv2
+  framework:
+    version: recommended
 
 globals:
   - id: cpu_speed
