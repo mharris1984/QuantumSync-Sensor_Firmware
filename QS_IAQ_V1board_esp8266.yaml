@@ -7,11 +7,6 @@ substitutions:
 esphome:
   name: "${name}"
   friendly_name: MasterBath IAQ
-  on_boot:
-    - priority: 900.0
-      then:
-        - lambda: |-
-          id(cpu_speed) = ESP.getCpuFreqMHz();
   project:
     name: "IAQuno.QuantumSyncSolutions"
     version: "${version}"
