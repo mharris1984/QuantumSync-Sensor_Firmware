@@ -155,14 +155,12 @@ sensor:
 #WIFI SIGNAL STRENGTH SETUP 
   - platform: wifi_signal 
     name: "IAQ UNO - WiFi Signal"
-    icon: "mdi:wifi"
     update_interval: 120s
     entity_category: "diagnostic"
 
 #IAQ FIRMWARE VERSION READOUT SETUP
 - platform: template
     name: QC_IAQ_Version
-    icon: "mdi:cogs"
     update_interval: 900s
     lambda: |- 
       return to_string("${version}");
@@ -172,7 +170,7 @@ sensor:
   - platform: template
     name: "ESP Cpu Speed"
     accuracy_decimals: 0
-    icon: "mdi:speedometer"
+    #icon: "mdi:speedometer"
     unit_of_measurement: Mhz
     lambda: |-
       return (id(cpu_speed));
@@ -185,20 +183,20 @@ sensor:
     lambda: return temperatureRead();
     unit_of_measurement: °C
     device_class: TEMPERATURE
-    icon: "mdi:thermometer"
+    #icon: "mdi:thermometer"
     update_interval: 60s
 
 #IAQ-UNO UPTIME SINCE LAST REBOOT SETUP
   - platform: uptime
     name: Uptime
     id: sys_uptime
-    icon: "mdi:thumb-up-outline"
+    #icon: "mdi:thumb-up-outline"
     update_interval: 60s
 
 #IAQ-UNO MEMORY STATUS SETUP
   - platform: template
     id: esp_memory
-    icon: mdi:memory
+    #icon: mdi:memory
     name: IAQ Sensor Free Memory
     lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024;
     unit_of_measurement: "kB"
