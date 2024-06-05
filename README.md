@@ -1,0 +1,1 @@
+Flashing the IAQ-UNO firmware, you flash your initial file in ESPHOME with QS_IAQ_V1board_esp32_FLASH.yaml.  This will then pull and update via the matching file QS_IAQ_V1board_esp32.yaml and keep it update. 
