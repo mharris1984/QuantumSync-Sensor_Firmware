@@ -158,6 +158,12 @@ sensor:
     name: "IAQ UNO - WiFi Signal"
     update_interval: 120s
 
+#WIFI INFORMATION READOUT SETUP
+- platform: wifi_info
+    name: "IAQ UNO - IP Address"
+    lambda: |- 
+      return to_string(WiFi.localIP().toString().c_str());
+
 #IAQ FIRMWARE VERSION READOUT SETUP
 - platform: template
     name: QC_IAQ_Version
