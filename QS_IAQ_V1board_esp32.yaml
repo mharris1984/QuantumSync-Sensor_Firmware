@@ -158,6 +158,13 @@ sensor:
     name: "IAQ UNO - WiFi Signal"
     update_interval: 120s
 
+#IAQ FIRMWARE VERSION READOUT SETUP
+- platform: template
+    name: QC_IAQ_Version
+    update_interval: 900s
+    lambda: |- 
+      return to_string("${version}");
+
 #IAQ-UNO CPU SPEED SETUP 
   - platform: template
     name: "ESP Cpu Speed"
@@ -207,10 +214,10 @@ text_sensor:
       name: "IAQ Accuracy"
 
 #IAQ FIRMWARE VERSION READOUT SETUP
-  - platform: template
-    name: QC_IAQ_Version
-    lambda: |- 
-      return to_string("${version}");
+#  - platform: template
+#    name: QC_IAQ_Version
+#    lambda: |- 
+#      return to_string("${version}");
 
 #IAQ CLASSIFICATION READOUT SETUP
   - platform: template
