@@ -6,7 +6,7 @@ substitutions:
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 packages:
-  ratgdo.esphome: github://mharris1984/IAQ_UNO/sensorpackage.yaml@main
+  ratgdo.esphome: github://mharris1984/QuantumSync-Sensor_Firmware/sensorpackage.yaml@main
 
 esphome:
   name: "${name}"
