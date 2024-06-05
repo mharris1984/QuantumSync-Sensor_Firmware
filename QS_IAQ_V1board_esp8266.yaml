@@ -99,7 +99,7 @@ i2c:
   scl: D1
 
 display:
-  - platform: SH1106_i2c
+  - platform: ssd1306_i2c
     model: "SH1106 128x64"
     address: 0x3C
     update_interval: 15s
