@@ -158,12 +158,6 @@ sensor:
     name: "IAQ UNO - WiFi Signal"
     update_interval: 120s
 
-#WIFI INFORMATION READOUT SETUP
-- platform: wifi_info
-    name: "IAQ UNO - IP Address"
-    lambda: |- 
-      return to_string(WiFi.localIP().toString().c_str());
-
 #IAQ FIRMWARE VERSION READOUT SETUP
 - platform: template
     name: QC_IAQ_Version
@@ -219,11 +213,21 @@ text_sensor:
     iaq_accuracy:
       name: "IAQ Accuracy"
 
-#IAQ FIRMWARE VERSION READOUT SETUP
-#  - platform: template
-#    name: QC_IAQ_Version
-#    lambda: |- 
-#      return to_string("${version}");
+#WIFI INFORMATION READOUT SETUP
+  - platform: wifi_info
+    ip_address:
+      name: IAQ-UNO IP Address
+    ssid:
+      name: IAQ-UNO Connected SSID
+    bssid:
+      name: IAQ-UNO Connected BSSID
+    mac_address:
+      name: IAQ-UNO Mac Wifi Address
+    scan_results:
+      name: IAQ-UNO Latest Scan Results
+    dns_address:
+      name: IAQ-UNO DNS Address
+
 
 #IAQ CLASSIFICATION READOUT SETUP
   - platform: template
