@@ -2,7 +2,7 @@
 substitutions:
   name: qc_iaq_uno
   friend: QuantumSync Solutions IAQ-UNO
-  version: "24.01.24.201"
+  version: "24.01.24.300"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -156,11 +156,13 @@ sensor:
 #WIFI SIGNAL STRENGTH SETUP 
   - platform: wifi_signal 
     name: "IAQ UNO - WiFi Signal"
+    icon: "mdi:wifi"
     update_interval: 120s
 
 #IAQ FIRMWARE VERSION READOUT SETUP
 - platform: template
     name: QC_IAQ_Version
+    icon: "mdi:cogs"
     update_interval: 900s
     lambda: |- 
       return to_string("${version}");
@@ -169,6 +171,7 @@ sensor:
   - platform: template
     name: "ESP Cpu Speed"
     accuracy_decimals: 0
+    icon: "mdi:speedometer"
     unit_of_measurement: Mhz
     lambda: |-
       return (id(cpu_speed));
@@ -181,12 +184,14 @@ sensor:
     lambda: return temperatureRead();
     unit_of_measurement: °C
     device_class: TEMPERATURE
+    icon: "mdi:thermometer"
     update_interval: 60s
 
 #IAQ-UNO UPTIME SINCE LAST REBOOT SETUP
   - platform: uptime
     name: Uptime
     id: sys_uptime
+    icon: "mdi:thumb-up-outline"
     update_interval: 60s
 
 #IAQ-UNO MEMORY STATUS SETUP
@@ -198,6 +203,27 @@ sensor:
     unit_of_measurement: "kB"
     state_class: measurement
     entity_category: "diagnostic"
+
+#WIFI INFORMATION READOUT SETUP
+  - platform: wifi_info
+    ip_address:
+      name: IAQ-UNO IP Address
+      icon: "mdi:ip"
+    ssid:
+      name: IAQ-UNO Connected SSID
+      icon: "mdi:wifi-check"
+    bssid:
+      name: IAQ-UNO Connected BSSID
+      icon: "mdi:wifi-check"
+    mac_address:
+      name: IAQ-UNO Mac Wifi Address
+      icon: "mdi:wifi"
+    scan_results:
+      name: IAQ-UNO Latest Scan Results
+      icon: "mdi:wifi-refresh"
+    dns_address:
+      name: IAQ-UNO DNS Address
+      icon: "mdi:dns"
 
 #PIR SENSOR SETUP
 binary_sensor:
@@ -213,20 +239,7 @@ text_sensor:
     iaq_accuracy:
       name: "IAQ Accuracy"
 
-#WIFI INFORMATION READOUT SETUP
-  - platform: wifi_info
-    ip_address:
-      name: IAQ-UNO IP Address
-    ssid:
-      name: IAQ-UNO Connected SSID
-    bssid:
-      name: IAQ-UNO Connected BSSID
-    mac_address:
-      name: IAQ-UNO Mac Wifi Address
-    scan_results:
-      name: IAQ-UNO Latest Scan Results
-    dns_address:
-      name: IAQ-UNO DNS Address
+
 
 
 #IAQ CLASSIFICATION READOUT SETUP
