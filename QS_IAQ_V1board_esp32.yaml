@@ -42,7 +42,8 @@ logger:
 
 #OTA PWD should be generated on device already. 
 #ota:
-#  password: !secret IAQ_OTA_PWD
+#  - platform: esphome
+#    password: !secret IAQ_OTA_PWD
 
 wifi:
   ssid: !secret wifi_ssid
