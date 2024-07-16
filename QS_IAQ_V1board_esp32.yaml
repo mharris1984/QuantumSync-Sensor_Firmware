@@ -1,7 +1,7 @@
 substitutions:
   name: qc_iaq_uno
   friend: QuantumSync Solutions IAQ-UNO
-  version: "24.01.24.600"
+  version: "24.07.15.100"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
 
 esphome:
@@ -64,11 +64,22 @@ output:
     pin: 2
     id: output_ledpin2
 
+#SETUP PWM SIGNAL FOR SERVER OUTPUT
+  - platform: ledc
+    id: servo_pwm_output
+    pin: 4
+    frequency: 50 Hz
+
 #ONBAORD LOCATION LED SETUP
 light:
   - platform: monochromatic
     name: "LED Locate"
     output: output_ledpin2
+
+#SERVO CAMERA PLATFORM SETUP
+servo:
+  - id: my_servo
+    output: servo_pwm_output
 
 #I2C PIN SETUP
 i2c:
@@ -306,8 +317,32 @@ text_sensor:
         return {"error"};
       }
 
+#SERVO NUMBER SETUP
+number:
+  - platform: template
+    name: Servo Control
+    min_value: -100
+    initial_value: 0
+    max_value: 100
+    step: 2
+    optimistic: true
+    set_action:
+      then:
+        - servo.write:
+            id: my_servo
+            level: !lambda 'return x / 100.0;'
+
 #RESTART BUTTON TO POWER CYCLE THE IAQ-UNO
 button:
   - platform: restart
     icon: mdi:power-cycle
     name: "IAQ-UNO Powercycle"
+
+button:
+  - platform: template
+    name: Cam OFF
+    id: btn_servo_off
+    on_press:
+      - servo.write:
+          id: my_servo
+          level: -100
