@@ -288,10 +288,10 @@ sensor:
 #SENSOR SETUP
 binary_sensor:
 #PIR BINARY SENSOR SETUP
-  - platform: gpio
-    pin: 4
-    name: "PIR Sensor"
-    device_class: motion
+#  - platform: gpio
+#    pin: 4
+#    name: "PIR Sensor"
+#    device_class: motion
 
 #RADAR BINARY SENSOR SETUP
   - platform: ld2410
