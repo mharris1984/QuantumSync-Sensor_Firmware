@@ -1,0 +1,33 @@
+#===============================================================================================================#
+## INSTALL THIS YAML IN ESPHOME AS YOUR MAIN IAQ-UNO CONFIG.  ALL UPDATES FOR THE QS IAQ-UNO ARE POSTED ON THE ##
+## GITHUB FIRMWARE SITE.  ANYTIME UPDATES ARE PUSHED, THE NEXT TIME YOU UPDATE THE SENSOR (LIKELY WHEN ESPHOME ##
+## UPDATES), YOU WILL GET THE LATEST FIRMWARE.                                                                 ##
+#===============================================================================================================#
+
+substitutions:
+  name: qc_iaq_uno
+  friend: QuantumSync Solutions IAQ-UNO
+  version: "24.01.24.101"
+  device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
+
+packages:
+  ratgdo.esphome: github://mharris1984/QuantumSync-Sensor_Firmware/QS_IAQ_V1board_esp32_WITH-LD2410.yaml@main
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friend}"
+
+api:
+  encryption:
+    key: !secret IAQ_API_ENCRYPTKEY
+
+ota:
+  password: !secret IAQ_OTA_PWD
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: !secret IAQ_Wifi_Portal_SSID
+    password: !secret IAQ_Wifi_Portal_PWD
+  domain: !secret IAQ_Wifi_Domain
