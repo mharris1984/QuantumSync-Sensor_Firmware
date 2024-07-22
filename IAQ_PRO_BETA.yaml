@@ -1,8 +1,8 @@
 substitutions:
-  name: qc_iaq#2_uno_radar
-  friend: QuantumSync Solutions IAQ#2-UNO_RADAR
+  name: iaq-pro_beta
+  friend: QuantumSync Solutions IAQ-PRO_BETAv
   version: "24.07.15.100"
-  device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO_RADAR Version':' ${version}.
+  device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-PRO_BETA Version':' ${version}.
 
 esphome:
   name: "${name}"
@@ -18,7 +18,7 @@ esphome:
           id(cpu_speed) = ESP.getCpuFreqMHz();
 
   project:
-    name: "IAQuno.QuantumSyncSolutions"
+    name: "IAQPRO_BETA.QuantumSyncSolutions"
     version: "${version}"
 
 globals:
@@ -32,26 +32,15 @@ esp32:
   framework:
     type: arduino
     
-
 logger:
-
-#API Encryption should be generated on device already. 
-#api:
-#  encryption:
-#    key: !secret IAQ_API_ENCRYPTKEY
-
-#OTA PWD should be generated on device already. 
-#ota:
-#  - platform: esphome
-#    password: !secret IAQ_OTA_PWD
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   ap:
-    ssid: !secret IAQ#2_Wifi_Portal_SSID
-    password: !secret IAQ#2_Wifi_Portal_PWD
-  domain: !secret IAQ#2_Wifi_Domain
+    ssid: !secret IAQ-PRO_BETA_Wifi_Portal_SSID
+    password: !secret IAQ-PRO_BETA_Wifi_Portal_PWD
+  domain: !secret IAQ-PRO_BETA_Wifi_Domain
 
 captive_portal:
 
