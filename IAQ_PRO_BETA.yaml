@@ -37,11 +37,11 @@ logger:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  domain: !secret wifi_HOME_domain
   ap:
     ssid: !secret IAQ-PRO_BETA_Wifi_Portal_SSID
     password: !secret IAQ-PRO_BETA_Wifi_Portal_PWD
-  domain: !secret IAQ-PRO_BETA_Wifi_Domain
-
+  
 captive_portal:
 
 web_server:
