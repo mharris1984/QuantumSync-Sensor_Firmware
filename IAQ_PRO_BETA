@@ -1,0 +1,607 @@
+substitutions:
+  name: qc_iaq#2_uno_radar
+  friend: QuantumSync Solutions IAQ#2-UNO_RADAR
+  version: "24.07.15.100"
+  device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO_RADAR Version':' ${version}.
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friend}"
+  comment: "${friend}"
+  platformio_options:
+    board_build.flash_mode: dio
+    
+  on_boot:
+  - priority: 900.0
+    then:
+      - lambda: |-
+          id(cpu_speed) = ESP.getCpuFreqMHz();
+
+  project:
+    name: "IAQuno.QuantumSyncSolutions"
+    version: "${version}"
+
+globals:
+  - id: cpu_speed
+    type: int
+    restore_value: no
+    initial_value: "0"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+    
+
+logger:
+
+#API Encryption should be generated on device already. 
+#api:
+#  encryption:
+#    key: !secret IAQ_API_ENCRYPTKEY
+
+#OTA PWD should be generated on device already. 
+#ota:
+#  - platform: esphome
+#    password: !secret IAQ_OTA_PWD
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: !secret IAQ#2_Wifi_Portal_SSID
+    password: !secret IAQ#2_Wifi_Portal_PWD
+  domain: !secret IAQ#2_Wifi_Domain
+
+captive_portal:
+
+web_server:
+  port: 80
+
+#UART SETUP
+uart:
+  tx_pin: GPIO16
+  rx_pin: GPIO17
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+  
+#ONBAORD LOCATION LED PIN SETUP
+output:
+  - platform: ledc
+    pin: 2
+    id: output_ledpin2
+
+#SETUP PWM SIGNAL FOR SERVER OUTPUT
+  - platform: ledc
+    id: servo_pwm_output
+    pin: 4
+    frequency: 50 Hz
+
+#ONBAORD LOCATION LED SETUP
+light:
+  - platform: monochromatic
+    name: "LED Locate"
+    output: output_ledpin2
+
+#RADAR SETUP
+ld2410:
+  id: ld2410_radar
+
+#SERVO CAMERA PLATFORM SETUP
+servo:
+  - id: my_servo
+    output: servo_pwm_output
+
+#I2C PIN SETUP
+i2c:
+  - id: i2c0
+    sda: 21
+    scl: 22
+    scan: true
+    frequency: 800kHz
+
+#I2C MULTIPLEXER CHANNEL SETUP
+tca9548a:
+  - id: multiplex0
+    i2c_id: i2c0
+    channels:
+      - bus_id: multiplex0channel0
+        channel: 0
+      - bus_id: multiplex0channel1
+        channel: 1
+      - bus_id: multiplex0channel2
+        channel: 2
+
+#NEEDED FOR BME680 SENSOR USAGE WITH ESPHOME
+bme680_bsec:
+  - id: bme680
+    i2c_id: "multiplex0channel0"
+    address: 0x77
+    state_save_interval: 6h
+    sample_rate: lp
+    iaq_mode: static
+    
+sensor:
+#BH1750 ILLUMINATION SENSOR SETUP
+  - platform: bh1750 
+    name: "LUX"
+    id: luxlight
+    address: 0x23
+    i2c_id: multiplex0channel1
+    update_interval: 2s
+
+#BME680 SENSOR SETUP
+  - platform: bme680_bsec #BME680 TEMP/BARO/HUMIDITY/C02/GAS/IAQ/BVOC SENSOR SETUP
+    bme680_bsec_id: bme680
+    temperature:
+      name: "Temperature"
+      accuracy_decimals: 1
+      filters:
+      - lambda: return x * (9.0/5.0) + 32.0;
+      unit_of_measurement: "°F"
+      id: temperaturebme
+    pressure:
+      name: "Barometric Pressure"
+      accuracy_decimals: 5
+      id: pressure
+    humidity:
+      name: "Humidity"
+      id: humiditybme
+      accuracy_decimals: 1
+    gas_resistance:
+      name: "Gas Resistance"
+      id: gas
+      accuracy_decimals: 5
+    co2_equivalent:
+      name: "CO2 Equivalent"
+    iaq:
+      name: "IAQ"
+      id: iaq
+    breath_voc_equivalent:
+      name: "Intake Breath VOC Equivalent"
+      filters:
+        - median
+
+#SP30 eC02/TVOC SENSOR SETUP
+  - platform: sgp30 
+    i2c_id: multiplex0channel2
+    eco2:
+      name: "eCO2"
+      accuracy_decimals: 1
+    tvoc:
+      name: "TVOC"
+      accuracy_decimals: 1
+    address: 0x58
+    update_interval: 1s
+    compensation: 
+      temperature_source: temperaturebme
+      humidity_source: humiditybme
+
+#WIFI SIGNAL STRENGTH SETUP 
+  - platform: wifi_signal 
+    name: IAQ-UNO - WiFi Signal
+    icon: "mdi:wifi"
+    update_interval: 120s
+    entity_category: "diagnostic"
+
+#IAQ-UNO CPU SPEED SETUP 
+  - platform: template
+    name: IAQ-UNO CPU Speed
+    accuracy_decimals: 0
+    icon: "mdi:speedometer"
+    unit_of_measurement: Mhz
+    lambda: |-
+      return (id(cpu_speed));
+    entity_category: "diagnostic"
+
+#IAQ-UNO ONBOARD CPU TEMP SETUP
+  - platform: template
+    id: sys_esp_temperature
+    name: IAQ-UNO CPU Temp
+    lambda: return temperatureRead();
+    unit_of_measurement: °C
+    device_class: TEMPERATURE
+    icon: "mdi:thermometer"
+    update_interval: 60s
+    entity_category: "diagnostic"
+
+#IAQ-UNO UPTIME SINCE LAST REBOOT SETUP
+  - platform: uptime
+    name: IAQ-UNO Uptime
+    id: sys_uptime
+    icon: "mdi:thumb-up-outline"
+    update_interval: 60s
+
+#IAQ-UNO MEMORY STATUS SETUP
+  - platform: template
+    id: esp_memory
+    icon: mdi:memory
+    name: IAQ-UNO Free Memory
+    lambda: return heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024;
+    unit_of_measurement: "kB"
+    state_class: measurement
+    entity_category: "diagnostic"
+
+#RADAR SENSOR SETUP 
+  - platform: ld2410
+    moving_distance:
+      name: Radar Moving Distance
+      id: moving_distance
+    still_distance:
+      name: Radar Still Distance
+      id: still_distance
+    moving_energy:
+      name: Radar Move Energy
+    still_energy:
+      name: Radar Still Energy
+    detection_distance:
+      name: Radar Detection Distance
+      id: radar_detection_distance
+    g0:
+      move_energy:
+        name: g0 move energy
+      still_energy:
+        name: g0 still energy
+    g1:
+      move_energy:
+        name: g1 move energy
+      still_energy:
+        name: g1 still energy
+    g2:
+      move_energy:
+        name: g2 move energy
+      still_energy:
+        name: g2 still energy
+    g3:
+      move_energy:
+        name: g3 move energy
+      still_energy:
+        name: g3 still energy
+    g4:
+      move_energy:
+        name: g4 move energy
+      still_energy:
+        name: g4 still energy
+    g5:
+      move_energy:
+        name: g5 move energy
+      still_energy:
+        name: g5 still energy
+    g6:
+      move_energy:
+        name: g6 move energy
+      still_energy:
+        name: g6 still energy
+    g7:
+      move_energy:
+        name: g7 move energy
+      still_energy:
+        name: g7 still energy
+    g8:
+      move_energy:
+        name: g8 move energy
+      still_energy:
+        name: g8 still energy
+
+
+#SENSOR SETUP
+binary_sensor:
+#PIR BINARY SENSOR SETUP
+#  - platform: gpio
+#    pin: 4
+#    name: "PIR Sensor"
+#    device_class: motion
+
+#RADAR BINARY SENSOR SETUP
+  - platform: ld2410
+    has_target:
+      name: Radar Target
+      id: radar_has_target
+    has_moving_target:
+      name: Radar Moving Target
+    has_still_target:
+      name: Radar Still Target
+  ## Set Up Radar Zones Based On Distance
+  - platform: template
+    name: "Radar Zone 1 Occupancy"
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if ((id(radar_has_target).state) && (id(radar_detection_distance).state < id(radar_z1_end).state)) {
+        return true;
+      } else {
+        return false;
+      }
+  - platform: template
+    name: "Radar Zone 2 Occupancy"
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if ((id(radar_has_target).state) && ((id(radar_z1_end).state < id(radar_detection_distance).state) && (id(radar_detection_distance).state < id(radar_z2_end).state))) {
+        return true;
+      } else {
+        return false;
+      }
+  - platform: template
+    name: "Radar Zone 3 Occupancy"
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if ((id(radar_has_target).state) && ((id(radar_z2_end).state < id(radar_detection_distance).state) && (id(radar_detection_distance).state < id(radar_z3_end).state))) {
+        return true;
+      } else {
+        return false;
+      }
+
+text_sensor: 
+#BME680 LAMBDA READOUT SETUP
+  - platform: bme680_bsec 
+    bme680_bsec_id: bme680
+    iaq_accuracy:
+      name: "IAQ Accuracy"
+
+#WIFI INFORMATION READOUT SETUP
+  - platform: wifi_info
+    ip_address:
+      name: IAQ-UNO IP Address
+      icon: "mdi:ip"
+    ssid:
+      name: IAQ-UNO Connected SSID
+      icon: "mdi:wifi-check"
+    bssid:
+      name: IAQ-UNO Connected BSSID
+      icon: "mdi:wifi-check"
+    mac_address:
+      name: IAQ-UNO Mac Wifi Address
+      icon: "mdi:wifi"
+    scan_results:
+      name: IAQ-UNO Latest Scan Results
+      icon: "mdi:wifi-refresh"
+    dns_address:
+      name: IAQ-UNO DNS Address
+      icon: "mdi:dns"
+
+#IAQ FIRMWARE VERSION READOUT SETUP
+  - platform: template
+    name: IAQ-UNO Version
+    lambda: |- 
+      return to_string("${version}");
+    entity_category: "config"
+
+  #RADAR FIRMWARE VERSION INFO  
+  - platform: ld2410
+    version:
+      name: "Radar Firmware Version"
+
+#IAQ CLASSIFICATION READOUT SETUP
+  - platform: template
+    name: "IAQ Classification"
+    icon: "mdi:checkbox-marked-circle-outline"
+    lambda: |-
+      if ( int(id(iaq).state) <= 50) {
+        return {"Excellent"};
+      }
+      else if (int(id(iaq).state) >= 50 && int(id(iaq).state) <= 100) {
+        return {"Good"};
+      }
+      else if (int(id(iaq).state) >= 100 && int(id(iaq).state) <= 150) {
+        return {"Lightly polluted"};
+      }
+      else if (int(id(iaq).state) >= 150 && int(id(iaq).state) <= 200) {
+        return {"Moderately polluted"};
+      }
+      else if (int(id(iaq).state) >= 200 && int(id(iaq).state) <= 250) {
+        return {"Heavily polluted"};
+      }
+      else if (int(id(iaq).state) >= 250 && int(id(iaq).state) <= 350) {
+        return {"Severely polluted"};
+      }
+      else if (int(id(iaq).state) >= 350) {
+        return {"Extremely polluted"};
+      }
+      else {
+        return {"error"};
+      }
+
+#LUX BRIGHTNESS READOUT SETUP
+  - platform: template
+    name: "LUX Brightness"
+    icon: "mdi:checkbox-marked-circle-outline"
+    lambda: |-
+      if (int(id(luxlight).state) <= 2) {
+        return {"DARK"};
+      }
+      else if (int(id(luxlight).state) >= 2 && int(id(luxlight).state) <= 10) {
+        return {"Inside Lights ON DIM"};
+      }
+      else if (int(id(luxlight).state) >= 10 && int(id(luxlight).state) <= 20) {
+        return {"Inside Lights ON"};
+      }
+      else if (int(id(luxlight).state) >= 20 && int(id(luxlight).state) <= 200) {
+        return {"Windows Open - Natural Light Coming In"};
+      }
+      else if (int(id(luxlight).state) >= 200 && int(id(luxlight).state) <= 550) {
+        return {"Full Sun Coming in the house"};
+      }
+      else if (int(id(luxlight).state) >= 550 && int(id(luxlight).state) <= 1000) {
+        return {"Sunny Day"};
+      }
+      else if (int(id(luxlight).state) >= 1000 && int(id(luxlight).state) <= 10000) {
+        return {"Direct Sun"};
+      }
+      else if (int(id(luxlight).state) >= 10000) {
+        return {"Extremely BRIGHT"};
+      }
+      else {
+        return {"error"};
+      }
+
+#NUMBER SETUP
+number:
+#SERVO NUMBER SETUP
+  - platform: template
+    name: Servo Control
+    min_value: -100
+    initial_value: 0
+    max_value: 100
+    step: 2
+    optimistic: true
+    set_action:
+      then:
+        - servo.write:
+            id: my_servo
+            level: !lambda 'return x / 100.0;'
+
+  #RADAR NUMBER SETUP
+  - platform: ld2410 
+    timeout:
+      name: Radar Timeout
+    max_move_distance_gate:
+      name: Radar Max Move Distance
+    max_still_distance_gate:
+      name: Radar Max Still Distance
+    g0:
+      move_threshold:
+        name: g0 move threshold
+      still_threshold:
+        name: g0 still threshold
+    g1:
+      move_threshold:
+        name: g1 move threshold
+      still_threshold:
+        name: g1 still threshold
+    g2:
+      move_threshold:
+        name: g2 move threshold
+      still_threshold:
+        name: g2 still threshold
+    g3:
+      move_threshold:
+        name: g3 move threshold
+      still_threshold:
+        name: g3 still threshold
+    g4:
+      move_threshold:
+        name: g4 move threshold
+      still_threshold:
+        name: g4 still threshold
+    g5:
+      move_threshold:
+        name: g5 move threshold
+      still_threshold:
+        name: g5 still threshold
+    g6:
+      move_threshold:
+        name: g6 move threshold
+      still_threshold:
+        name: g6 still threshold
+    g7:
+      move_threshold:
+        name: g7 move threshold
+      still_threshold:
+        name: g7 still threshold
+    g8:
+      move_threshold:
+        name: g8 move threshold
+      still_threshold:
+        name: g8 still threshold
+  # Setting ending of zone 1 occupancy
+  - platform: template
+    name: "Radar End Zone 1"
+    id: radar_z1_end
+    device_class: distance
+    min_value: 0
+    max_value: 600
+    step: 1
+    mode: box
+    update_interval: never
+    optimistic: true
+    restore_value: true
+    initial_value: 10
+    icon: "mdi:arrow-collapse-right"
+    entity_category: CONFIG
+
+  # Setting ending of zone 2 occupancy
+  - platform: template
+    name: "Radar End Zone 2"
+    id: radar_z2_end
+    device_class: distance
+    min_value: 0
+    max_value: 600
+    step: 1
+    mode: box
+    update_interval: never
+    optimistic: true
+    restore_value: true
+    initial_value: 36
+    icon: "mdi:arrow-collapse-right"
+    entity_category: CONFIG
+
+  # Setting ending of zone 3 occupancy
+  - platform: template
+    name: "Radar End Zone 3"
+    id: radar_z3_end
+    device_class: distance
+    min_value: 0
+    max_value: 600
+    step: 1
+    mode: box
+    update_interval: never
+    optimistic: true
+    restore_value: true
+    initial_value: 100
+    icon: "mdi:arrow-collapse-right"
+    entity_category: CONFIG
+
+#RESTART BUTTON TO POWER CYCLE THE IAQ-UNO
+button:
+#ESP RESTART
+  - platform: restart
+    icon: mdi:power-cycle
+    name: "IAQ-UNO Powercycle"
+
+#FACTORY RESET ESP
+  - platform: factory_reset
+    disabled_by_default: True
+    name: "Factory Reset ESP"
+    id: factory_reset_all
+
+#RESET ALL RADAR SETTINGS BACK TO DECAULT VALUES
+  - platform: ld2410
+    factory_reset:
+      name: "Factory Reset Radar"
+    restart:
+      name: "Restart Radar"
+    query_params:
+      name: query params
+
+#SERVO PLATFORM, CAM OFF FLIP
+  - platform: template
+    name: Cam OFF
+    id: btn_servo_off
+    on_press:
+      - servo.write:
+          id: my_servo
+          level: -100
+          
+#SERVO PLATFORM, CAM ON FLIP
+  - platform: template
+    name: Cam ON
+    id: btn_servo_on
+    on_press:
+      - servo.write:
+          id: my_servo
+          level: 100
+
+#SETUP TIME
+time:
+  - platform: sntp
+    id: time_sntp
+
+#SETUP SELECT DROPDOWN FOR RADAR
+select:
+  - platform: ld2410
+    distance_resolution:
+      name: "Radar Distance Resolution"
+          
