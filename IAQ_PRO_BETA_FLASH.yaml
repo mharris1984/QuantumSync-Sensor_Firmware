@@ -1,1 +1,57 @@
+#===============================================================================================================#
+## INSTALL THIS YAML IN ESPHOME AS YOUR MAIN IAQ-UNO CONFIG.  ALL UPDATES FOR THE QS IAQ-UNO ARE POSTED ON THE ##
+## GITHUB FIRMWARE SITE.  ANYTIME UPDATES ARE PUSHED, THE NEXT TIME YOU UPDATE THE SENSOR (LIKELY WHEN ESPHOME ##
+## UPDATES), YOU WILL GET THE LATEST FIRMWARE.                                                                 ##
+#===============================================================================================================#
 
+substitutions:
+  name: iaq-pro_beta
+  friend: QuantumSync Solutions IAQ-PRO_BETAv
+  version: "24.07.15.100"
+  device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-PRO_BETA Version':' ${version}.
+
+packages:
+  iaq_pro_beta.esphome: github://mharris1984/QuantumSync-Sensor_Firmware/IAQ_PRO_BETA@BETA
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friend}"
+  comment: "${friend}"
+  platformio_options:
+    board_build.flash_mode: dio
+    
+  on_boot:
+  - priority: 900.0
+    then:
+      - lambda: |-
+          id(cpu_speed) = ESP.getCpuFreqMHz();
+
+  project:
+    name: "IAQPRO_BETA.QuantumSyncSolutions"
+    version: "${version}"
+
+globals:
+  - id: cpu_speed
+    type: int
+    restore_value: no
+    initial_value: "0"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+    
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  domain: !secret wifi_HOME_domain
+  ap:
+    ssid: !secret IAQ-PRO_BETA_Wifi_Portal_SSID
+    password: !secret IAQ-PRO_BETA_Wifi_Portal_PWD
+  
+captive_portal:
+
+web_server:
+  port: 80
