@@ -3,7 +3,8 @@ substitutions:
   friend: QuantumSync Solutions IAQ-UNO
   version: "24.07.15.100"
   device_description: ${friendly_name} made by QuantumSync Solutions - IAQ-UNO Version':' ${version}.
-
+  device_manufacturer: "QuantumSync Solutions"
+  
 esphome:
   name: "${name}"
   friendly_name: "${friend}"
